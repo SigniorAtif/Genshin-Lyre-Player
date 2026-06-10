@@ -9,8 +9,9 @@ from pathlib import Path
 from typing import Callable, Optional
 
 from vision_parser.chord_grouper import ChordGrouper
-from vision_parser.config.schema import InstrumentConfig
+from vision_parser.config.schema import InstrumentConfig, ResolutionRef
 from vision_parser.edge_detector import EdgeDetector, TriggerEvent
+from vision_parser.panel_detector import detect_panel
 from vision_parser.preprocessor import Preprocessor
 from vision_parser.roi_manager import ROIManager
 from vision_parser.timing_engine import TimingEngine
@@ -61,15 +62,55 @@ class ParserPipeline:
             progress_callback: Optional callable(frame_index, total_frames)
                 invoked every 30 frames for UI progress bars.
         """
-        # --- Phase 1: open video and initialize pipeline components ---
+        # --- Phase 1: open video ---
         reader = VideoReader(video_path)
         actual_w, actual_h = reader.width, reader.height
+        fps = reader.fps  # save before any close/reopen
 
-        fps = reader.fps  # save before close() releases the capture
-        preprocessor = Preprocessor(self._cfg.detection, panel_crop=self._cfg.panel_crop)
-        roi_manager = ROIManager(self._cfg, actual_w, actual_h)
+        # --- Phase 1b: auto-detect panel position from first N frames ---
+        # Scans up to 40 raw frames to locate the 3×7 key-button grid.
+        # If found, positions override the JSON config so alignment is always
+        # exact regardless of resolution, window size, or UI-scale setting.
+        active_cfg = self._cfg
+        _panel_found = False
+        _scan_limit = 40
+        for packet in reader.frames():
+            panel_crop, roi_boxes = detect_panel(packet.bgr)
+            if panel_crop is not None:
+                active_cfg = InstrumentConfig(
+                    instrument=self._cfg.instrument,
+                    resolution=ResolutionRef(width=actual_w, height=actual_h),
+                    rois=roi_boxes,
+                    detection=self._cfg.detection,
+                    timing=self._cfg.timing,
+                    panel_crop=panel_crop,
+                )
+                _panel_found = True
+                break
+            if packet.frame_index >= _scan_limit:
+                break
+
+        if _panel_found:
+            logger.info(
+                "Panel auto-detected — using dynamic ROI positions "
+                "(crop %d×%d at %d,%d)",
+                active_cfg.panel_crop.w, active_cfg.panel_crop.h,
+                active_cfg.panel_crop.x, active_cfg.panel_crop.y,
+            )
+            reader.reopen()   # restart from frame 0 for calibration + processing
+        else:
+            logger.warning(
+                "Panel auto-detection failed after %d frames — "
+                "falling back to config ROIs (alignment may be off at this resolution)",
+                _scan_limit,
+            )
+            reader.reopen()   # still reopen to reset position
+
+        # --- Phase 1c: initialize pipeline components with chosen config ---
+        preprocessor = Preprocessor(active_cfg.detection, panel_crop=active_cfg.panel_crop)
+        roi_manager = ROIManager(active_cfg, actual_w, actual_h)
         edge_detector = EdgeDetector(
-            self._cfg.detection,
+            active_cfg.detection,
             keys=[box.key for box in roi_manager.roi_boxes],
         )
 
@@ -111,7 +152,7 @@ class ParserPipeline:
         if intermediate_path is not None:
             payload = {
                 "fps": fps,
-                "bpm": bpm_override if bpm_override is not None else self._cfg.timing.bpm,
+                "bpm": bpm_override if bpm_override is not None else active_cfg.timing.bpm,
                 "events": [
                     {
                         "key": ev.key,
@@ -127,20 +168,20 @@ class ParserPipeline:
             logger.info("Intermediate trigger data saved to '%s'", intermediate_path)
 
         # --- Phase 3: quantize, assign durations, group chords ---
-        timing = TimingEngine(self._cfg.timing, fps, bpm_override)
+        timing = TimingEngine(active_cfg.timing, fps, bpm_override)
         quantized = timing.quantize(all_triggers)
         durations = timing.assign_durations(quantized)
 
         grouper = ChordGrouper(
-            detection_cfg=self._cfg.detection,
-            timing_cfg=self._cfg.timing,
+            detection_cfg=active_cfg.detection,
+            timing_cfg=active_cfg.timing,
             fps=fps,
             grid_duration_sec=timing.grid_duration_sec,
         )
         tokens = grouper.group(quantized, durations)
 
         # --- Phase 4: write output ---
-        writer = TokenWriter(self._cfg.timing)
+        writer = TokenWriter(active_cfg.timing)
         Path(output_path).parent.mkdir(parents=True, exist_ok=True)
         with open(output_path, "w", encoding="utf-8") as fh:
             writer.write(tokens, timing.bpm, fh)

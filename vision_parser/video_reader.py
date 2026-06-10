@@ -105,6 +105,20 @@ class VideoReader:
             yield FramePacket(frame_index=frame_index, timestamp_sec=timestamp_sec, bgr=bgr)
             frame_index += 1
 
+    def reopen(self) -> None:
+        """Release and re-open the video from the beginning.
+
+        Use this to restart reading after a scan/detection pass that consumed
+        some leading frames. More reliable than ``CAP_PROP_POS_FRAMES`` seek
+        on H.264 streams (which can land on the wrong keyframe).
+        """
+        if self._cap.isOpened():
+            self._cap.release()
+        self._cap = cv2.VideoCapture(self._path)
+        if not self._cap.isOpened():
+            raise FileNotFoundError(f"Could not re-open video: {self._path}")
+        logger.debug("Reopened capture from start: '%s'", self._path)
+
     def close(self) -> None:
         """Release the underlying VideoCapture.
 
