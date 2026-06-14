@@ -367,7 +367,7 @@ public class SettingsPageViewModel : Screen
         var request = new HttpRequestMessage(HttpMethod.Get,
             "https://api.github.com/repos/sabihoshi/GenshinLyreMidiPlayer/releases");
 
-        var productInfo = new ProductInfoHeaderValue("GenshinLyreMidiPlayer", ProgramVersion.ToString());
+        var productInfo = new ProductInfoHeaderValue("GenshinLyrePlayer", ProgramVersion.ToString());
         request.Headers.UserAgent.Add(productInfo);
 
         var response = await client.SendAsync(request);

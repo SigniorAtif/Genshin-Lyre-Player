@@ -74,7 +74,7 @@
                 </Grid>
             </ui:TitleBar.Header>
             <ui:TitleBar.Tray>
-                <ui:NotifyIcon FocusOnLeftClick="True" MenuOnRightClick="True" TooltipText="Windsong Lyre MIDI Player">
+                <ui:NotifyIcon FocusOnLeftClick="True" MenuOnRightClick="True" TooltipText="Genshin Lyre Player">
                     <ui:NotifyIcon.Menu>
                         <ContextMenu>
                             <ui:MenuItem Command="{s:Action PlayPause, Target=PlayerView}" Header="Play / Pause" SymbolIcon="Play16" />

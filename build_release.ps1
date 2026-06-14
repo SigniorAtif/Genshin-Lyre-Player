@@ -1,16 +1,16 @@
 <#
 .SYNOPSIS
-    Builds a complete, self-contained release package for GenshinLyreMidiPlayer.
+    Builds a complete, self-contained release package for GenshinLyrePlayer.
 
 .DESCRIPTION
     Produces three executables with no external runtime dependencies:
-      GenshinLyreMidiPlayer.exe  --  self-contained WPF app (.NET runtime bundled)
+      GenshinLyrePlayer.exe  --  self-contained WPF app (.NET runtime bundled)
       genshin-parse.exe          --  video -> token-sheet converter (Python + OpenCV)
       genshin-play.exe           --  token-sheet -> keystrokes player (Python)
 
     Output:
       release\                                    folder ready to upload as-is
-      GenshinLyreMidiPlayer-v<ver>-win-x64.zip    ready for GitHub Releases
+      GenshinLyrePlayer-v<ver>-win-x64.zip    ready for GitHub Releases
 
 .REQUIREMENTS
     - Python 3.10+ on PATH   (pip install pyinstaller is handled automatically)
@@ -32,8 +32,8 @@ $Version = "1.0.0"
 # Paths
 $OutDir   = Join-Path $Root "release"
 $BuildDir = Join-Path $Root "build\pyinstaller"
-$ZipPath  = Join-Path $Root "GenshinLyreMidiPlayer-v$Version-win-x64.zip"
-$CsProj   = "GenshinLyreMidiPlayer\GenshinLyreMidiPlayer.WPF\GenshinLyreMidiPlayer.WPF.csproj"
+$ZipPath  = Join-Path $Root "GenshinLyrePlayer-v$Version-win-x64.zip"
+$CsProj   = "GenshinLyrePlayer\GenshinLyrePlayer.WPF\GenshinLyrePlayer.WPF.csproj"
 
 function Step([string]$msg) {
     Write-Host ""
@@ -100,8 +100,8 @@ python -m PyInstaller `
 
 if ($LASTEXITCODE -ne 0) { throw "PyInstaller failed for genshin-play" }
 
-# --- 4. GenshinLyreMidiPlayer.exe -------------------------------------------
-Step "GenshinLyreMidiPlayer.exe  (dotnet publish, self-contained, ~230 MB)"
+# --- 4. GenshinLyrePlayer.exe -------------------------------------------
+Step "GenshinLyrePlayer.exe  (dotnet publish, self-contained, ~230 MB)"
 
 dotnet publish $CsProj `
     --configuration Release `

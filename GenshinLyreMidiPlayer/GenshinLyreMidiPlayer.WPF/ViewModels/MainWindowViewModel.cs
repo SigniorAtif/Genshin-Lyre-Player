@@ -14,7 +14,7 @@ public class MainWindowViewModel : Conductor<IScreen>
 
     public MainWindowViewModel(IContainer ioc)
     {
-        Title = $"Genshin Lyre MIDI Player {SettingsPageViewModel.ProgramVersion}";
+        Title = $"Genshin Lyre Player {SettingsPageViewModel.ProgramVersion}";
 
         _ioc = ioc;
 
