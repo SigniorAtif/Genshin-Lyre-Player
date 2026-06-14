@@ -3,6 +3,12 @@
 .vscode/
 .code-review-graph/
 
+# Personal / session scratchpad files
+thoughtdump*.md
+
+# Archive files (never commit release zips to the repo)
+*.zip
+
 # Python
 __pycache__/
 *.py[cod]
@@ -13,16 +19,20 @@ dist/
 build/
 
 # Generated output (not source)
-output/*.txt
-output/*.json
+output/
+intermediate/
 
-# Debug/scratch images generated during calibration
+# Samples — only keep the placeholder and the bundled MIDI fixture;
+# user videos, converted sheets, and debug images stay local.
+samples/*.txt
 samples/*.png
-
-# Video files (large binary)
 samples/*.mp4
+samples/*.avi
+samples/*.mkv
+samples/*.mov
 
-# Keep the test MIDI fixture
+# Keep the placeholder and the test MIDI fixture
+!samples/.gitkeep
 !samples/Test/
 
 # C# / Visual Studio
