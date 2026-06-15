@@ -10,14 +10,13 @@
         <Version>1.0.0</Version>
         <ApplicationIcon>item_windsong_lyre.ico</ApplicationIcon>
         <Nullable>enable</Nullable>
-        <RepositoryUrl>https://github.com/sabihoshi/GenshinLyreMidiPlayer</RepositoryUrl>
-        <Authors>sabihoshi</Authors>
+        <RepositoryUrl>https://github.com/SigniorAtif/GenshinLyrePlayer</RepositoryUrl>
+        <Authors>Atif Ahmed</Authors>
         <Product>Genshin Lyre Player</Product>
         <Company />
-        <Copyright>sabihoshi</Copyright>
+        <Copyright>Atif Ahmed</Copyright>
         <Description>A music player for Genshin Impact's Windsong Lyre. Supports MIDI playback and video-to-sheet conversion.</Description>
         <LangVersion>latest</LangVersion>
-        <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
         <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
         <SupportedOSPlatformVersion>10.0.17763.0</SupportedOSPlatformVersion>
     </PropertyGroup>
@@ -32,13 +31,6 @@
         <PackageReference Include="PropertyChanged.Fody" Version="4.0.5" />
         <PackageReference Include="Stylet" Version="1.3.6" />
         <PackageReference Include="WPF-UI" Version="2.0.3" />
-    </ItemGroup>
-
-    <ItemGroup>
-        <None Include="..\LICENSE.md">
-            <Pack>True</Pack>
-            <PackagePath></PackagePath>
-        </None>
     </ItemGroup>
 
     <ItemGroup>
