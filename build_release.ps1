@@ -127,13 +127,24 @@ Get-ChildItem $OutDir -File | Where-Object Extension -ne ".exe" | ForEach-Object
 # Remove generated .spec files from repo root (build artefacts)
 Get-ChildItem $Root -Filter "*.spec" -File | Remove-Item -Force
 
-# --- 6. Zip -----------------------------------------------------------------
+# --- 6. Bundle sample songs -------------------------------------------------
+Step "Sample songs"
+
+$SongsOut = Join-Path $OutDir "songs"
+New-Item $SongsOut -ItemType Directory | Out-Null
+
+Get-ChildItem (Join-Path $Root "songs") -Filter "*.txt" | ForEach-Object {
+    Copy-Item $_.FullName -Destination $SongsOut
+    Write-Host "  Included: songs\$($_.Name)"
+}
+
+# --- 7. Zip -----------------------------------------------------------------
 Step "Zip"
 
 Compress-Archive -Path "$OutDir\*" -DestinationPath $ZipPath -CompressionLevel Optimal
 Write-Host "  Created: $ZipPath"
 
-# --- 7. Summary -------------------------------------------------------------
+# --- 8. Summary -------------------------------------------------------------
 Write-Host ""
 Write-Host "  Release v$Version ready!" -ForegroundColor Green
 Write-Host ""

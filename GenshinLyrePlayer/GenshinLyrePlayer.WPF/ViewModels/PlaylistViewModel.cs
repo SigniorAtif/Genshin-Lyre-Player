@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Media;
@@ -125,9 +126,25 @@ public class PlaylistViewModel : Screen,
 
     public async Task AddFiles(IEnumerable<History> files)
     {
+        var stale = new List<History>();
+
         foreach (var file in files)
         {
+            if (!File.Exists(file.Path))
+            {
+                stale.Add(file);
+                continue;
+            }
+
             await AddFile(file);
+        }
+
+        // Prune history entries whose files no longer exist on disk
+        if (stale.Count > 0)
+        {
+            await using var db = _ioc.Get<LyreContext>();
+            db.History.RemoveRange(stale);
+            await db.SaveChangesAsync();
         }
 
         RefreshPlaylist();

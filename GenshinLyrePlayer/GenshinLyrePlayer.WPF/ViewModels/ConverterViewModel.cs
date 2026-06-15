@@ -47,6 +47,13 @@ public class ConverterViewModel : Screen
     public bool ShowLog    => IsConverting || ConvertDone;
     public bool ShowResult => ConvertDone  && ConvertSuccess;
 
+    /// <summary>
+    /// True when genshin-parse.exe is bundled next to the app (release build).
+    /// Hides the "Requires Python" dev hint in the UI.
+    /// </summary>
+    public static bool IsBundledParser =>
+        File.Exists(Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "genshin-parse.exe"));
+
     // ── Commands ─────────────────────────────────────────────────────
     public void BrowseVideo()
     {

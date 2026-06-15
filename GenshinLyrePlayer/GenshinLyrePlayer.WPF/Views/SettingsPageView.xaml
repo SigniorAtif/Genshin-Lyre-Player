@@ -189,6 +189,18 @@
                 </StackPanel>
             </Border>
 
+            <!-- ══ Appearance card ═══════════════════════════════ -->
+            <Border Style="{StaticResource WinPanel}" Padding="20,16" Margin="0,0,0,12">
+                <StackPanel>
+                    <TextBlock Text="Appearance" Style="{StaticResource SectionLabelStyle}" Margin="0,0,0,14" />
+                    <TextBlock Text="Transition Style" Style="{StaticResource EyebrowStyle}" Margin="0,0,0,8" />
+                    <ComboBox SelectedItem="{Binding Transition}"
+                              SelectedIndex="{Binding Default.SelectedTransition, Source={StaticResource Settings}}"
+                              ItemsSource="{x:Static transitions:TransitionCollection.Transitions}"
+                              MinWidth="200" HorizontalAlignment="Left" />
+                </StackPanel>
+            </Border>
+
             <!-- ══ License card ══════════════════════════════════ -->
             <Border Style="{StaticResource WinPanel}" Padding="20,16">
                 <StackPanel>

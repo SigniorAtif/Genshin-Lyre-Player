@@ -1,3 +1,7 @@
+using System;
+using System.Collections.Generic;
+using System.IO;
+using System.Linq;
 using System.Windows.Controls;
 using GenshinLyreMidiPlayer.Data;
 using JetBrains.Annotations;
@@ -98,5 +102,23 @@ public class MainWindowViewModel : Conductor<IScreen>
 
         await using var db = _ioc.Get<LyreContext>();
         await PlaylistView.AddFiles(db.History);
+
+        // Auto-add any bundled songs from the songs/ folder next to the exe
+        // that aren't already in the playlist (first-run seeding).
+        var songsDir = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "songs");
+        if (Directory.Exists(songsDir))
+        {
+            var existing = new HashSet<string>(
+                PlaylistView.Tracks.Select(t => t.Path),
+                StringComparer.OrdinalIgnoreCase);
+
+            var newSongs = Directory
+                .GetFiles(songsDir, "*.txt")
+                .Where(p => !existing.Contains(p))
+                .ToList();
+
+            if (newSongs.Count > 0)
+                await PlaylistView.AddFiles(newSongs);
+        }
     }
 }
